@@ -4,10 +4,6 @@ import dispatcher from '../action/dispatcher'
 
 
 class CounterStore extends ReduceStore {
-    constructor() {
-        super(dispatcher)
-    }
-    
     getInitialState() {
         return {
             current: 1
@@ -28,4 +24,4 @@ class CounterStore extends ReduceStore {
 }
 
 
-export default new CounterStore()
+export default new CounterStore(dispatcher)

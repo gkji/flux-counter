@@ -1,4 +1,3 @@
-import FluxStoreGroup from '../FluxStoreGroup';
 function shallowArrayEqual(a, b) {
     if(a === b) {
         return true
@@ -20,10 +19,13 @@ function shallowArrayEqual(a, b) {
 class FluxContainerSubscriptions {
     constructor () {
         this._callbacks = []
-        this._storeGroup = null
+        // this._storeGroup = null
         this._stores = null
         // 所有 store change 事件的回调句柄
         this.tokens = []
+
+        this._dispatcher = null
+        this._dispatchToken = null
     }
     
     setStores (stores) {
@@ -52,7 +54,12 @@ class FluxContainerSubscriptions {
         }
         
         // 在 store change 之后
-        this._storeGroup = new FluxStoreGroup(stores, callCallbacks)
+
+        this._dispatcher = stores.getDispatcher()
+        // store 的 dispatch token
+        this._dispatchToken = this._dispatcher.register(payload => {
+            callCallbacks()
+        })
     }
     
     addListener (fn) {
@@ -74,9 +81,8 @@ class FluxContainerSubscriptions {
     }
     
     _resetStoreGroup () {
-        if (this._storeGroup) {
-            this._storeGroup.release()
-            this._storeGroup = null
+        if (this._dispatcher) {
+            this._dispatcher.unregister(this._dispatchToken)
         }
     }
     

@@ -39,10 +39,8 @@ class FluxContainerSubscriptions {
         
         let changed = false
         // 注册所有 store 的 change 事件
-        this._tokens = stores.map(store => {
-            store.addListener(() => {
-                changed = true
-            })
+        this._tokens = stores.addListener(() => {
+            changed = true
         })
         
         // 所有 store 更新完之后的回调

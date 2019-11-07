@@ -8,9 +8,8 @@ import actionType from '../action/actionTypes'
 
 class App extends Component {
     static getStores() {
-        return [
-          counterStore
-        ]
+        return counterStore;
+        
     }
     
     static calculateState(prev) {

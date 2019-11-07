@@ -1,6 +1,6 @@
 function _getUniformDispatcher(stores, Dispatcher) {
     // 所有 store 应该使用 同一个 dispatcher
-    const dispatcher = stores[0].getDispatcher()
+    const dispatcher = stores.getDispatcher()
     return dispatcher
 }
 
@@ -11,9 +11,7 @@ class FluxStoreGroup {
         this._dispatcher = _getUniformDispatcher(stores)
         
         // store 的 dispatch token
-        const storeTokens = stores.map(store => store.getDispatchToken())
         this._dispatchToken = this._dispatcher.register(payload => {
-            this._dispatcher.waitFor(storeTokens)
             callback()
         })
     }

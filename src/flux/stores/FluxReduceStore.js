@@ -1,34 +1,34 @@
-import FluxStore from './FluxStore';
+const {EventEmitter} = require('fbemitter')
 // Store 的基类
 // 核心就是 _onDispatch 方法, 该方法将注册到 dispatcher
 // 在 dispatch 之后, onDispatch 将调用 reduce 更新状态, 并触发 store change 事件
-export class FluxReduceStore extends FluxStore {
+export class FluxReduRceStore {
     constructor(dispatcher) {
-        super(dispatcher)
         this._state = this.getInitialState()
-    }
-    
-    // 返回 store 的初始状态
-    // 在 store 创建时调用一次
-    // 子类必须实现该方法
-    getInitialState() {
-    
+
+        // 子类可用的属性
+        this.__className = this.constructor.name
+        
+        this.__changed = false
+        this.__changeEvent = 'change'
+        this.__dispatcher = dispatcher
+        this.__emitter = new EventEmitter()
+        
+        // 私有属性
+        
+        // 将 __onDispatch 注册为 dispatcher 的回调 返回callback id
+        this._dispatchToken = dispatcher.register(payload => {
+            this.__onDispatch(payload)
+        })
     }
     
     // 返回 store 的全部状态
-    // 如果 state 不是 immutable, 子类应该实现该方法, 避免暴露 _state
     getState() {
         return this._state
     }
     
-    // 根据 action 返回状态
-    // 子类必须实现该方法
-    reduce(state, action) {
-    
-    }
-    
+
     // 比较两个 state 对象是否相同
-    // 如果 state 不是 immutable, 子类应该实现该方法
     areEqual(one, two) {
         return one === two
     }
@@ -55,6 +55,31 @@ export class FluxReduceStore extends FluxStore {
         if(this.hasChanged()) {
             this.__emitChange()
         }
+    }
+
+    // 获取 dispatcher
+    getDispatcher() {
+        return this.__dispatcher
+    }
+    
+    // 判断 store 在最近的 dispatch 后是否已更新
+    hasChanged() {
+        return this.__changed
+    }
+
+    __setChanged(bool) {
+        this.__changed = bool
+    }
+    
+    __emitChange() {
+        this.__emitter.emit(this.__changeEvent)
+    }
+    
+    
+    // 注册 change 事件
+    // 返回 token 对象, token.remove() 将移除注册
+    addListener(callback) {
+        return this.__emitter.addListener(this.__changeEvent, callback)
     }
 }
 

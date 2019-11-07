@@ -12,24 +12,18 @@ const DEFAULT_OPTIONS = {
 // getState 返回 state 对象
 // create 创建了 Base 的子类, 通过子类调用父类的生命周期函数
 
-function create(Base, options={}) {
+function create(Base) {
     
-    // options
     const realOptions = {
       ...DEFAULT_OPTIONS,
-      ...options,
     }
     
-    const calculateState = (state, maybeProps, maybeContext) => {
-        const props = realOptions.withProps ? maybeProps : undefined
-        const context = realOptions.withContext ? maybeContext : undefined
-        return Base.calculateState(state, props, context)
+    const calculateState = (state) => {
+        return Base.calculateState(state)
     }
     
-    const getStores = (maybeProps, maybeContext) => {
-        const props = realOptions.withProps ? maybeProps : undefined;
-        const context = realOptions.withContext ? maybeContext : undefined;
-        return Base.getStores(props, context)
+    const getStores = () => {
+        return Base.getStores()
     }
     
     
@@ -39,7 +33,8 @@ function create(Base, options={}) {
             super(props, context)
             this._subscriptions = new FluxContainerSubscripts()
             // 设置 stores
-            this._subscriptions.setStores(getStores(props))
+            const stores = getStores(props);
+            this._subscriptions.setStores(stores)
             // 注册 subscription 的回调
             this._subscriptions.addListener(() => {
                 this.setState((prevState, currentProps) => {
@@ -47,38 +42,30 @@ function create(Base, options={}) {
                 })
             })
             
-            // ?
-            const calculatedState = calculateState(undefined, props, context)
+            const calculatedState = calculateState()
             this.state = {
-                // TODO delete ?
                 ...(this.state || {}),
                 ...calculatedState,
             }
         }
         
         componentWillReceiveProps(nextProps, nextContext) {
-            if(super.componentWillReceiveProps) {
-                super.componentWillReceiveProps(nextProps, nextContext)
-            }
+            // if(super.componentWillReceiveProps) {
+            //     super.componentWillReceiveProps(nextProps, nextContext)
+            // }
             
-            if(realOptions.withProps || realOptions.withContext) {
-                // update store and state
-                this._subscriptions.setStores(getStores(nextProps, nextContext))
-                this.setState(prevState => calculateState(prevState, nextProps, nextContext))
-            }
         }
         
         componentWillUnmount() {
-            if(super.componentWillUnmount) {
-                super.componentWillUnmount()
-            }
+            // if(super.componentWillUnmount) {
+            //     super.componentWillUnmount()
+            // }
             
             this._subscriptions.reset()
         }
         
     }
     
-    // TODO pure container
     
     // update container name
     const componentName = Base.displayName || Base.name

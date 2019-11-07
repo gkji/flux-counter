@@ -60,8 +60,6 @@ function create(Base) {
             // if(super.componentWillUnmount) {
             //     super.componentWillUnmount()
             // }
-            
-            this._subscriptions.reset()
         }
         
     }

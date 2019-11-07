@@ -1,11 +1,4 @@
 
-import FluxContainerSubscripts from './FluxContainerSubscriptions'
-
-const DEFAULT_OPTIONS = {
-    pure: true,
-    withProps: false,
-    withContext: false,
-}
 
 // Base 是一个 ReactComponent, 有 getStores 和 calculateState 两个静态方法
 // getStores 返回 FluxStore 的数组
@@ -13,10 +6,7 @@ const DEFAULT_OPTIONS = {
 // create 创建了 Base 的子类, 通过子类调用父类的生命周期函数
 
 function create(Base) {
-    
-    const realOptions = {
-      ...DEFAULT_OPTIONS,
-    }
+
     
     const calculateState = (state) => {
         return Base.calculateState(state)
@@ -31,12 +21,15 @@ function create(Base) {
     class ContainerClass extends Base {
         constructor(props, context) {
             super(props, context)
-            this._subscriptions = new FluxContainerSubscripts()
-            // 设置 stores
+            this._callbacks = []
+            this._store = null
+
             const stores = getStores(props);
-            this._subscriptions.setStores(stores)
+
+            this.setStores(stores)
             // 注册 subscription 的回调
-            this._subscriptions.addListener(() => {
+
+            this.addListener(() => {
                 this.setState((prevState, currentProps) => {
                     return calculateState(prevState, currentProps, context)
                 })
@@ -48,21 +41,36 @@ function create(Base) {
                 ...calculatedState,
             }
         }
-        
-        componentWillReceiveProps(nextProps, nextContext) {
-            // if(super.componentWillReceiveProps) {
-            //     super.componentWillReceiveProps(nextProps, nextContext)
-            // }
+
+        addListener (fn) {
+            this._callbacks.push(fn)
+        }
+
+        setStores (store) {
+            this._store = store
             
+            let changed = false
+            // 注册所有 store 的 change 事件
+            store.addListener(() => {
+                changed = true
+            })
+            
+            // 所有 store 更新完之后的回调
+            const callCallbacks = () => {
+                if (changed) {
+                    this._callbacks.forEach(fn => fn())
+                    changed = false
+                }
+            }
+            
+            const dispatcher = store.getDispatcher()
+            dispatcher.register(payload => {
+                callCallbacks()
+            })
         }
-        
-        componentWillUnmount() {
-            // if(super.componentWillUnmount) {
-            //     super.componentWillUnmount()
-            // }
-        }
-        
     }
+
+
     
     
     // update container name

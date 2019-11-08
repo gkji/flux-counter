@@ -14,10 +14,8 @@ export class FluxReduRceStore {
         this.__dispatcher = dispatcher
         this.__emitter = new EventEmitter()
         
-        // 私有属性
-        
         // 将 __onDispatch 注册为 dispatcher 的回调 返回callback id
-        this._dispatchToken = dispatcher.register(payload => {
+        dispatcher.register(payload => {
             this.__onDispatch(payload)
         })
     }

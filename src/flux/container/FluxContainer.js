@@ -21,7 +21,6 @@ function create(Base) {
         }
 
         setStores = (store) => {
-            
             let changed = false
             store.addListener(() => {
                 changed = true

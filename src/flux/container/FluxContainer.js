@@ -10,31 +10,19 @@ function create(Base) {
         constructor(props, context) {
             super(props, context)
         
-            const stores = Base.getStores(props);
-            this.setStores(stores)
+            const store = Base.getStores(props);
+            const dispatcher = store.getDispatcher()
+            dispatcher.register(payload => {
+                this.setState((prevState) => {
+                    return Base.calculateState(prevState)
+                })
+            })
 
             const calculatedState = Base.calculateState()
             this.state = {
                 ...(this.state || {}),
                 ...calculatedState,
             }
-        }
-
-        setStores = (store) => {
-            let changed = false
-            store.addListener(() => {
-                changed = true
-            })
-            
-            const dispatcher = store.getDispatcher()
-            dispatcher.register(payload => {
-                if (changed) {
-                    this.setState((prevState) => {
-                        return Base.calculateState(prevState)
-                    })
-                    changed = false
-                }
-            })
         }
     }
      

@@ -11,8 +11,8 @@ function create(Base) {
             super(props, context)
         
             const store = Base.getStores(props);
-            const dispatcher = store.getDispatcher()
-            dispatcher.register(payload => {
+            const emitter = store.getEmitter()
+            emitter.register(payload => {
                 this.setState((prevState) => {
                     return Base.calculateState(prevState)
                 })

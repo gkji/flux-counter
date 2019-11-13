@@ -1,4 +1,5 @@
-const {EventEmitter} = require('fbemitter')
+import {Dispatcher} from '../Dispatcher'
+
 // Store 的基类
 // 核心就是 _onDispatch 方法, 该方法将注册到 dispatcher
 // 在 dispatch 之后, onDispatch 将调用 reduce 更新状态, 并触发 store change 事件
@@ -6,11 +7,13 @@ export class ReduceStore {
     constructor(dispatcher) {
         this._state = this.getInitialState()
         this.__className = this.constructor.name
-        
-        this.__changeEvent = 'change'
+
+        // 一个 dispatcher 用于监听 用户输入，触发 store 的数据更新
         this.__dispatcher = dispatcher
-        this.__emitter = new EventEmitter()
-        
+
+        // 用一个新的 dispatcher 来负责在 store 数据更新后，通知 container 更新 state
+        this.__emitter = new Dispatcher()
+
         // 将 __onDispatch 注册为 dispatcher 的回调 返回callback id
         dispatcher.register(payload => {
             this.__onDispatch(payload)
@@ -34,18 +37,13 @@ export class ReduceStore {
         
         if(!this.areEqual(startState, endState)) {
             this._state = endState
-            this.__emitChange()
+            this.__emitter.dispatch(action)
         }
     }
 
-    // 获取 dispatcher
-    getDispatcher() {
-        return this.__dispatcher
+    // 获取 emitter
+    getEmitter() {
+        return this.__emitter
     }
-    
-    __emitChange() {
-        this.__emitter.emit(this.__changeEvent)
-    }    
-
 }
 
